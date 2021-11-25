@@ -12,17 +12,29 @@ router.put('/:id', async (req, res) => {
         const salt = await bcrypt.genSalt(10)
         req.body.password = await bcrypt.hash(password, salt)
       } catch (err) {
-        res.status(500).json({message: err.message})
+        res.status(500).json({
+          success: false,
+          message: err.message,
+        })
       }
     }
     try {
       const user = await User.findByIdAndUpdate(userId, {$set: req.body})
-      res.status(200).json({message: 'Account has been updated !'})
+      res.status(200).json({
+        success: true,
+        message: 'Account has been updated !',
+      })
     } catch (err) {
-      res.status(500).json({message: err.message})
+      res.status(500).json({
+        success: false,
+        message: err.message,
+      })
     }
   } else {
-    res.status(403).json('You can update only your account !')
+    res.status(403).json({
+      success: false,
+      message: 'You can update only your account !',
+    })
   }
 })
 
@@ -32,12 +44,21 @@ router.delete('/:id', async (req, res) => {
   if (userId === req.params.id || isAdmin) {
     try {
       const user = await User.findByIdAndDelete(userId)
-      res.status(200).json({message: 'Account has been deleted !'})
+      res.status(200).json({
+        success: true,
+        message: 'Account has been deleted !',
+      })
     } catch (err) {
-      res.status(500).json({message: err.message})
+      res.status(500).json({
+        success: false,
+        message: err.message,
+      })
     }
   } else {
-    res.status(403).json('You can delete only your account !')
+    res.status(403).json({
+      success: false,
+      message: 'You can delete only your account !',
+    })
   }
 })
 
@@ -46,9 +67,16 @@ router.get('/:id', async (req, res) => {
   try {
     const user = await User.findById(req.params.id)
     const {password, updatedAt, ...other} = user._doc
-    res.status(200).json({message: 'Successful !', user: other})
+    res.status(200).json({
+      success: true,
+      message: 'Successful !',
+      user: other,
+    })
   } catch (err) {
-    res.status(500).json({message: err.message})
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    })
   }
 })
 
@@ -63,15 +91,27 @@ router.put('/:id/follow', async (req, res) => {
       if (!user.followers.includes(userId)) {
         await user.updateOne({$push: {followers: userId}})
         await currentUser.updateOne({$push: {followings: id}})
-        res.status(200).json({message: 'User has been followed !'})
+        res.status(200).json({
+          success: true,
+          message: 'User has been followed !',
+        })
       } else {
-        res.status(403).json({message: 'You allready follow this user !'})
+        res.status(403).json({
+          success: false,
+          message: 'You already follow this user !',
+        })
       }
     } catch (err) {
-      res.status(500).json({message: err.message})
+      res.status(500).json({
+        success: false,
+        message: err.message,
+      })
     }
   } else {
-    res.status(403).json({message: 'You can not follow yourself !'})
+    res.status(403).json({
+      success: false,
+      message: 'You can not follow yourself !',
+    })
   }
 })
 
@@ -86,15 +126,27 @@ router.put('/:id/unfollow', async (req, res) => {
       if (user.followers.includes(userId)) {
         await user.updateOne({$pull: {followers: userId}})
         await currentUser.updateOne({$pull: {followings: id}})
-        res.status(200).json({message: 'User has been unfollowed !'})
+        res.status(200).json({
+          success: true,
+          message: 'User has been unfollowed !',
+        })
       } else {
-        res.status(403).json({message: 'You are not following this user !'})
+        res.status(403).json({
+          success: false,
+          message: 'You are not following this user !',
+        })
       }
     } catch (err) {
-      res.status(500).json({message: err.message})
+      res.status(500).json({
+        success: false,
+        message: err.message,
+      })
     }
   } else {
-    res.status(403).json({message: 'You can not unfollow yourself !'})
+    res.status(403).json({
+      success: false,
+      message: 'You can not unfollow yourself !',
+    })
   }
 })
 
