@@ -14,13 +14,14 @@ router.post('/', async (req, res) => {
     const savePost = await newPost.save()
     res.status(200).json({
       success: true,
-      message: 'Successful !',
+      message: 'Post created successfully !',
       post: savePost,
     })
   } catch (err) {
     res.status(500).json({
       success: false,
-      message: err.message,
+      message: 'Internal server error !',
+      error: err.message,
     })
   }
 })
@@ -36,15 +37,15 @@ router.put('/:id', async (req, res) => {
         message: 'The post has been updated !',
       })
     } else {
-      res.status(403).json({
+      return res.status(403).json({
         success: false,
-        message: 'You can update only your post !',
+        message: 'User is not found !',
       })
     }
   } catch (err) {
-    res.status(500).json({
+    res.status(404).json({
       success: false,
-      message: err.message,
+      message: 'The post is not found !',
     })
   }
 })
@@ -60,15 +61,15 @@ router.delete('/:id', async (req, res) => {
         message: 'The post has been deleted !',
       })
     } else {
-      res.status(403).json({
+      return res.status(403).json({
         success: false,
-        message: 'You can delete only your post !',
+        message: 'User is not found !',
       })
     }
   } catch (err) {
-    res.status(500).json({
+    res.status(404).json({
       success: false,
-      message: err.message,
+      message: 'The post is not found !',
     })
   }
 })
@@ -94,7 +95,8 @@ router.put('/:id/like', async (req, res) => {
   } catch (err) {
     res.status(500).json({
       success: false,
-      message: err.message,
+      message: 'Internal server error !',
+      error: err.message,
     })
   }
 })
@@ -111,7 +113,8 @@ router.get('/:id', async (req, res) => {
   } catch (err) {
     res.status(500).json({
       success: false,
-      message: err.message,
+      message: 'Internal server error !',
+      error: err.message,
     })
   }
 })
@@ -130,7 +133,8 @@ router.get('/timeline/all', async (req, res) => {
   } catch (err) {
     res.status(500).json({
       success: false,
-      message: err.message,
+      message: 'Internal server error !',
+      error: err.message,
     })
   }
 })
