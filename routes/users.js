@@ -1,63 +1,56 @@
 const express = require('express')
 const router = express.Router()
-const bcrypt = require('bcrypt')
+const argon2 = require('argon2')
 const User = require('../models/User')
 
 // UPDATE USER
-router.put('/:id', async (req, res) => {
-  const {userId, isAdmin, password} = req.body
-  if (userId === req.params.id || isAdmin) {
+router.patch('/:id', async (req, res) => {
+  const {password} = req.body
+  const {id} = req.params
+
+  try {
     if (password) {
       try {
-        const salt = await bcrypt.genSalt(10)
-        req.body.password = await bcrypt.hash(password, salt)
-      } catch (err) {
+        req.body.password = await argon2.hash(password)
+      } catch {
         res.status(500).json({
           success: false,
-          message: err.message,
+          message: 'Internal server error !',
+          error: err.message,
         })
       }
     }
-    try {
-      const user = await User.findByIdAndUpdate(userId, {$set: req.body})
-      res.status(200).json({
-        success: true,
-        message: 'Account has been updated !',
-      })
-    } catch (err) {
-      res.status(500).json({
-        success: false,
-        message: err.message,
-      })
-    }
-  } else {
-    res.status(403).json({
+    const user = await User.findById(id)
+    Object.assign(user, req.body)
+    user.save()
+    res.status(200).json({
+      success: true,
+      message: 'Account has been updated !',
+      userUpdate: user,
+    })
+  } catch (err) {
+    res.status(404).json({
       success: false,
-      message: 'You can update only your account !',
+      message: 'User is not found !',
     })
   }
 })
 
 // DELETE USER
 router.delete('/:id', async (req, res) => {
-  const {userId, isAdmin} = req.body
-  if (userId === req.params.id || isAdmin) {
-    try {
-      const user = await User.findByIdAndDelete(userId)
-      res.status(200).json({
-        success: true,
-        message: 'Account has been deleted !',
-      })
-    } catch (err) {
-      res.status(500).json({
-        success: false,
-        message: err.message,
-      })
-    }
-  } else {
-    res.status(403).json({
+  const {id} = req.params
+
+  try {
+    const user = await User.findById(id)
+    await user.remove()
+    res.status(200).json({
+      success: true,
+      message: 'Account has been deleted !',
+    })
+  } catch (err) {
+    res.status(404).json({
       success: false,
-      message: 'You can delete only your account !',
+      message: 'User is not found !',
     })
   }
 })
@@ -73,9 +66,9 @@ router.get('/:id', async (req, res) => {
       user: other,
     })
   } catch (err) {
-    res.status(500).json({
+    res.status(404).json({
       success: false,
-      message: err.message,
+      message: 'User is not found !',
     })
   }
 })
@@ -88,6 +81,7 @@ router.put('/:id/follow', async (req, res) => {
     try {
       const user = await User.findById(id)
       const currentUser = await User.findById(userId)
+
       if (!user.followers.includes(userId)) {
         await user.updateOne({$push: {followers: userId}})
         await currentUser.updateOne({$push: {followings: id}})
@@ -102,9 +96,9 @@ router.put('/:id/follow', async (req, res) => {
         })
       }
     } catch (err) {
-      res.status(500).json({
+      res.status(404).json({
         success: false,
-        message: err.message,
+        message: 'User is not found !',
       })
     }
   } else {
@@ -137,9 +131,9 @@ router.put('/:id/unfollow', async (req, res) => {
         })
       }
     } catch (err) {
-      res.status(500).json({
+      res.status(404).json({
         success: false,
-        message: err.message,
+        message: 'User is not found !',
       })
     }
   } else {
