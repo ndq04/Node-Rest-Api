@@ -6,6 +6,7 @@ const app = express()
 
 const helmet = require('helmet')
 const morgan = require('morgan')
+const cors = require('cors')
 
 const userRoute = require('./routes/users')
 const authRoute = require('./routes/auth')
@@ -16,6 +17,7 @@ const mongoose = require('./connectDB')
 mongoose.ConnectDB()
 
 // Middleware
+app.use(cors())
 app.use(express.json())
 app.use(helmet())
 app.use(morgan('common'))
@@ -32,5 +34,7 @@ app.get('/users', (req, res) => {
 })
 
 app.listen(process.env.PORT, () => {
-  console.log(`Server is listening on http://localhost:${process.env.PORT}`)
+  console.log(
+    `Server is listening on http://localhost:${process.env.PORT}`
+  )
 })

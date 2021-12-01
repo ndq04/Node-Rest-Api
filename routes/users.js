@@ -56,9 +56,15 @@ router.delete('/:id', async (req, res) => {
 })
 
 // GET A USER
-router.get('/:id', async (req, res) => {
+// lh:5000/api/users?userId=12345
+// lh:5000/api/users?username=Quang
+router.get('/', async (req, res) => {
+  const userId = req.query.userId
+  const username = req.query.username
   try {
-    const user = await User.findById(req.params.id)
+    const user = userId
+      ? await User.findById(userId)
+      : await User.findOne({username})
     const {password, updatedAt, ...other} = user._doc
     res.status(200).json({
       success: true,
@@ -84,7 +90,9 @@ router.put('/:id/follow', async (req, res) => {
 
       if (!user.followers.includes(userId)) {
         await user.updateOne({$push: {followers: userId}})
-        await currentUser.updateOne({$push: {followings: id}})
+        await currentUser.updateOne({
+          $push: {followings: id},
+        })
         res.status(200).json({
           success: true,
           message: 'User has been followed !',
@@ -119,7 +127,9 @@ router.put('/:id/unfollow', async (req, res) => {
       const currentUser = await User.findById(userId)
       if (user.followers.includes(userId)) {
         await user.updateOne({$pull: {followers: userId}})
-        await currentUser.updateOne({$pull: {followings: id}})
+        await currentUser.updateOne({
+          $pull: {followings: id},
+        })
         res.status(200).json({
           success: true,
           message: 'User has been unfollowed !',
